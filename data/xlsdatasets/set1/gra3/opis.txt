@@ -1,0 +1,17 @@
+Gra3
+
+etap1
+10k reklama net
+
+etap2
+10k reklama magazyny
+
+etap3
+10k reklama TV
+
+etap4
+spadek jakosci
+50->20
+
+etap5
+podwyzka ceny 20->30 koszt 10

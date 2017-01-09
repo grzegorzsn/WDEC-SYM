@@ -1,0 +1,12 @@
+etap1
+parametry takie jak w grze3
+reklama 90k
+
+etap2 
+brak reklamy zmniejszona cena do 20
+
+etap3
+jakosc 100 cena 30
+
+etap 4 
+jakosc 100 koszt produkcji +4 zwiekszamy cene o 4
