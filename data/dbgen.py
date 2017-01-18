@@ -23,12 +23,14 @@ for sheet in sheets:
 	try:
 		col1 = sheet.columns[1]
 		col2 = sheet.columns[2]
+		money = sheet[col1][3]
 		volume = sheet[col1][4]
 		quality = sheet[col1][5]
 		price = sheet[col1][6]
 		commCosts = sum(sheet[col1][7:9]) # sum of commercials costs 
 		profit = sheet[col2][2]
-		db.append((volume, quality, price, commCosts, profit))
+		sold = sheet[col2][0] # number of sold products
+		db.append((money, volume, quality, price, commCosts, profit, sold))
 	except:
 		print "Exception during proccessing sheet: "
 		print sheet

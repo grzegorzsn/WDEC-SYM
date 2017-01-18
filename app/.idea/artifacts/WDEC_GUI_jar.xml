@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="WDEC-GUI:jar">
+    <output-path>$PROJECT_DIR$/Bin</output-path>
+    <properties id="ant-preprocessing">
+      <options enabled="true" />
+    </properties>
+    <root id="archive" name="WDEC-GUI.jar">
+      <element id="module-output" name="WDEC-GUI" />
+    </root>
+  </artifact>
+</component>
