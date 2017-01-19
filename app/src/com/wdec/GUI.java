@@ -1,8 +1,11 @@
 package com.wdec;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
 import java.math.BigDecimal;
 import java.util.concurrent.ExecutionException;
 
@@ -31,11 +34,13 @@ public class GUI {
     private JFormattedTextField riskPredictedTxt;
     private JLabel predictedProfitLbl;
     private JFormattedTextField predictedProfitTxt;
+    private JSpinner epsilonSpnr;
+    private JLabel epsilonLbl;
     private static JFrame frame;
 
 
-    private String databasePath = "db.csv";
-    private String costsDataPath = "samplecosts.csv";
+    private String databasePath = "/db.csv";
+    private String costsDataPath = "/costs.csv";
     private DecisionDatabase decisionDatabase;
 
     public GUI()
@@ -52,6 +57,7 @@ public class GUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 desiredRiskTxt.setEnabled(includeRiskRbYes.isSelected());
+                epsilonSpnr.setEnabled(includeRiskRbYes.isSelected());
                 desiredRiskTxt.setText("");
             }
         });
@@ -60,6 +66,7 @@ public class GUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 desiredRiskTxt.setEnabled(includeRiskRbYes.isSelected());
+                epsilonSpnr.setEnabled(includeRiskRbYes.isSelected());
             }
         });
         searchSolutionBtn.addActionListener(new ActionListener() {
@@ -69,7 +76,14 @@ public class GUI {
             }
         });
 
+        epsilonSpnr.setModel(new SpinnerNumberModel(0,0,1,0.01));
 
+        epsilonSpnr.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                DecisionMaker.setSimilarityEpsilon(new BigDecimal((Double) epsilonSpnr.getValue()));
+            }
+        });
     }
 
     public static void main(String[] args)

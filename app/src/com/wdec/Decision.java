@@ -41,6 +41,17 @@ public class Decision{
         calculateRisk();
     }
 
+    public Decision(Decision d)
+    {
+        this.money = d.money;
+        this.volume = d.volume;
+        this.quality = d.quality;
+        this.price = d.price;
+        this.commCosts = d.commCosts;
+        this.profit = d.profit;
+        this.volumeSold = d.volumeSold;
+        calculateRisk();
+    }
     private void calculateRisk()
     {
         BigDecimal volumeNotSold = new BigDecimal( volume.intValue() - volumeSold.intValue());
@@ -74,6 +85,14 @@ public class Decision{
     public BigDecimal getVolumeSold() {return volumeSold;}
 
     public BigDecimal getRisk() {return risk;}
+
+    public void setVolume(BigDecimal volume) {
+        this.volume = volume;
+    }
+
+    public void setProfit(BigDecimal profit) {
+        this.profit = profit;
+    }
 
     @Override
     public String toString() {

@@ -1,13 +1,9 @@
 package com.wdec;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Created by Grzegorz on 2017-01-12.
@@ -17,7 +13,7 @@ public class DecisionDatabase {
     private ArrayList<Decision> records;
     private HashMap<BigDecimal, HashMap<BigDecimal, BigDecimal>> costsDictionary;
 
-    private BigDecimal similarityEpsilon = new BigDecimal("0.05");
+
 
     public DecisionDatabase() {
         this.records = new ArrayList<Decision>();
@@ -26,7 +22,7 @@ public class DecisionDatabase {
     public DecisionDatabase(String decisionCsvFilePath, String costsCsvFilePath) throws Exception {
 
         ReadDecisionsFromCSV(decisionCsvFilePath);
-        //ReadSampleCostsFromCSV(costsCsvFilePath);
+        ReadSampleCostsFromCSV(costsCsvFilePath);
     }
 
     public void ReadDecisionsFromCSV(String csvFilePath) throws Exception {
@@ -34,7 +30,8 @@ public class DecisionDatabase {
         BufferedReader br = null;
         String line = "";
         try {
-            br = new BufferedReader(new FileReader(csvFilePath));
+            InputStream input = getClass().getResourceAsStream(csvFilePath);
+            br = new BufferedReader(new InputStreamReader(input));
             while ((line = br.readLine()) != null) {
                 records.add(new Decision(line));
             }
@@ -60,7 +57,8 @@ public class DecisionDatabase {
         String line = "";
         costsDictionary = new HashMap<>();
         try {
-            br = new BufferedReader(new FileReader("costs.csv"));
+            InputStream input = getClass().getResourceAsStream(csvFilePath);
+            br = new BufferedReader(new InputStreamReader(input));
             while ((line = br.readLine()) != null) {
                 addToCostsDict(line);
             }
@@ -80,7 +78,7 @@ public class DecisionDatabase {
     }
 
     private void addToCostsDict(String line) {
-        String[] values = line.split(",");
+        String[] values = line.split(";");
         BigDecimal volume = new BigDecimal(values[0]);
         BigDecimal quality = new BigDecimal(values[1]);
         BigDecimal cost = new BigDecimal(values[2]);
@@ -130,7 +128,7 @@ public class DecisionDatabase {
     }
 
 
-    public Decision findBestDecisionSimilarTo(Decision decision, BigDecimal maxMoney) {
+    public Decision findBestDecisionSimilarTo(Decision decision, BigDecimal maxMoney, BigDecimal similarityEpsilon) {
         BigDecimal startingRisk = decision.getRisk();
         for (Decision record : records) {
             if(maxMoney.compareTo(record.getMoney()) == -1) continue;
@@ -143,6 +141,73 @@ public class DecisionDatabase {
         }
         return decision;
     }
+
+    public BigDecimal getSampleCost(Decision decision)
+    {
+        BigDecimal upperVolume = findUpperVolume(decision.getVolume());
+        BigDecimal lowerVolume = findLowerVolume(decision.getVolume());
+        BigDecimal lowerQualityOfUpperVolume = findLowerQuality(decision.getQuality(), upperVolume);
+        BigDecimal lowerQualityOfLowerVolume = findLowerQuality(decision.getQuality(),lowerVolume);
+        BigDecimal upperQualityOfUpperVolume = findUpperQuality(decision.getQuality(), upperVolume);
+        BigDecimal upperQualityOfLowerVolume = findUpperQuality(decision.getQuality(),lowerVolume);
+
+        ArrayList<BigDecimal> costs = new ArrayList<>();
+        costs.add(costsDictionary.get(lowerVolume).get(lowerQualityOfLowerVolume));
+        costs.add(costsDictionary.get(lowerVolume).get(upperQualityOfLowerVolume));
+        costs.add(costsDictionary.get(upperVolume).get(lowerQualityOfUpperVolume));
+        costs.add(costsDictionary.get(upperVolume).get(upperQualityOfLowerVolume));
+
+        return Collections.max(costs,BigDecimal::compareTo);
+    }
+
+    private BigDecimal findLowerQuality(BigDecimal quality, BigDecimal volume)
+    {
+        Set<BigDecimal> qualitySet = costsDictionary.get(volume).keySet();
+        BigDecimal result = null;
+        for (BigDecimal q : qualitySet)
+            if (q.compareTo(quality) == -1 || q.compareTo(quality) == 0) {
+                if (result == null) result = q;
+                if (q.subtract(quality).compareTo((result.subtract(quality))) == -1) result = q;
+            }
+        return result;
+    }
+
+    private BigDecimal findUpperQuality(BigDecimal quality, BigDecimal volume)
+    {
+        Set<BigDecimal> qualitySet = costsDictionary.get(volume).keySet();
+        BigDecimal result = null;
+        for (BigDecimal q : qualitySet)
+            if (q.compareTo(quality) == 1 || q.compareTo(quality) == 0) {
+                if (result == null) result = q;
+                if (q.subtract(quality).compareTo((result.subtract(quality))) == -1) result = q;
+            }
+        return result;
+    }
+
+    private BigDecimal findUpperVolume(BigDecimal volume) {
+        Set<BigDecimal> volumeSet = costsDictionary.keySet();
+        BigDecimal result = null;
+        for (BigDecimal v : volumeSet)
+            if (v.compareTo(volume) == 1 || v.compareTo(volume) == 0) {
+                if (result == null) result = v;
+                if (v.subtract(volume).compareTo((result.subtract(volume))) == -1) result = v;
+            }
+        return result;
+    }
+
+    private BigDecimal findLowerVolume(BigDecimal volume)
+    {
+        Set<BigDecimal> volumeSet = costsDictionary.keySet();
+        BigDecimal result = null;
+        for( BigDecimal v : volumeSet)
+            if( v.compareTo(volume) == -1 || v.compareTo(volume)==0)
+            {
+                if(result == null) result = v;
+                if(v.subtract(volume).abs().compareTo((result.subtract(volume).abs())) == -1) result = v;
+            }
+        return  result;
+    }
+
 
     @Override
     public String toString() {

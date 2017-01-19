@@ -7,6 +7,9 @@ import java.math.BigDecimal;
  */
 public class DecisionMaker {
 
+
+    private static BigDecimal similarityEpsilon = new BigDecimal("0.05");
+
     public static Decision decide(DecisionDatabase database, BigDecimal availableMoney)
     {
         return decide(database, availableMoney, null);
@@ -25,21 +28,47 @@ public class DecisionMaker {
     private static Decision decideWithoutRisk(DecisionDatabase database, BigDecimal availableMoney)
     {
         Decision decision = database.findBestRecordWithMoneyBelow(availableMoney);
-        recalculate(decision, availableMoney);
+        decision = recalculate(database, new Decision(decision), availableMoney);
         return decision;
     }
 
     private static Decision decideWithRisk(DecisionDatabase database, BigDecimal availableMoney, BigDecimal desiredRisk)  {
-        /*TODO*/
         Decision firstChoice = database.findRecordWithNearestRisk(desiredRisk,availableMoney);
-        Decision secondChoice = database.findBestDecisionSimilarTo(firstChoice, availableMoney );
+        Decision secondChoice = database.findBestDecisionSimilarTo(firstChoice, availableMoney, similarityEpsilon);
         return secondChoice;
     }
 
-    private static void recalculate(Decision decision, BigDecimal availableMoney)
+    private static Decision recalculate(DecisionDatabase database, Decision decision, BigDecimal availableMoney)
     {
-        /*
-        * TODO
-        */
+        BigDecimal lastSampleCost = database.getSampleCost(decision);
+        BigDecimal initialVolume = decision.getVolume();
+        BigDecimal sampleCost = lastSampleCost;
+        BigDecimal newVolume = initialVolume;
+        BigDecimal lastVolume = null;
+        while(!newVolume.equals(lastVolume))
+        {
+            sampleCost = database.getSampleCost(decision);
+            lastVolume = newVolume;
+            newVolume = decision.getMoney().divide(sampleCost,0, BigDecimal.ROUND_HALF_DOWN);
+            decision.setVolume(newVolume);
+        }
+        if(newVolume.compareTo(initialVolume) == 1) decision.setVolume(newVolume);
+        else decision.setVolume(initialVolume);
+
+        BigDecimal additionalVolume = decision.getVolume().subtract(initialVolume);
+        BigDecimal additionalProfit = decision.getPrice().multiply(additionalVolume);
+        decision.setProfit(decision.getProfit().add(additionalProfit));
+
+        return decision;
+    }
+
+
+    
+    public static BigDecimal getSimilarityEpsilon() {
+        return similarityEpsilon;
+    }
+
+    public static void setSimilarityEpsilon(BigDecimal similarityEpsilon) {
+        DecisionMaker.similarityEpsilon = similarityEpsilon;
     }
 }

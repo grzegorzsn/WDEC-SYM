@@ -6,6 +6,8 @@
     </properties>
     <root id="archive" name="WDEC-GUI.jar">
       <element id="module-output" name="WDEC-GUI" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/db.csv" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/costs.csv" />
     </root>
   </artifact>
 </component>
