@@ -28,6 +28,7 @@ public class DecisionMaker {
     private static Decision decideWithoutRisk(DecisionDatabase database, BigDecimal availableMoney)
     {
         Decision decision = database.findBestRecordWithMoneyBelow(availableMoney);
+        if (decision == null) return decision;
         decision = recalculate(database, new Decision(decision), availableMoney);
         return decision;
     }
@@ -56,7 +57,8 @@ public class DecisionMaker {
         else decision.setVolume(initialVolume);
 
         BigDecimal additionalVolume = decision.getVolume().subtract(initialVolume);
-        BigDecimal additionalProfit = decision.getPrice().multiply(additionalVolume);
+        BigDecimal profitAtSample = decision.getPrice().subtract(sampleCost);
+        BigDecimal additionalProfit = profitAtSample.multiply(additionalVolume);
         decision.setProfit(decision.getProfit().add(additionalProfit));
 
         return decision;
